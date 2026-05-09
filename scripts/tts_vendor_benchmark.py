@@ -18,16 +18,32 @@ from eleven_demo.benchmarks.tts_vendor import (
 )
 from eleven_demo.config import get_settings
 
+_EPILOG = """examples:
+  %(prog)s --n 5 --text-set short-pt-br --out artifacts/benchmarks/run.json
+  %(prog)s --n 1 --openai-format pcm --quiet
+
+Requires DEFAULT_PT_VOICE_ID and OPENAI_API_KEY in the environment (.env).
+"""
+
 TEXT_SETS: dict[str, tuple[str, ...]] = dict(VENDOR_CANONICAL_TEXT_SETS)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="ElevenLabs vs OpenAI TTS vendor benchmark.")
+    parser = argparse.ArgumentParser(
+        description="ElevenLabs vs OpenAI TTS vendor benchmark.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=_EPILOG,
+    )
     parser.add_argument("--n", type=int, default=5)
     parser.add_argument("--text-set", default="short-pt-br", choices=sorted(TEXT_SETS.keys()))
     parser.add_argument("--eleven-model", default=None)
     parser.add_argument("--openai-model", default=None)
     parser.add_argument("--openai-format", default=None, choices=["mp3", "pcm"])
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Write JSON only; skip the Rich summary table and path message.",
+    )
     parser.add_argument(
         "--out",
         default="artifacts/benchmarks/tts-vendor-latest.json",
@@ -64,6 +80,9 @@ def main() -> None:
     outp.parent.mkdir(parents=True, exist_ok=True)
     payload = benchmark_report_to_serializable(report)
     outp.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    if args.quiet:
+        return
 
     table = Table(title="Vendor TTS summary (TTFB ms)")
     table.add_column("provider")

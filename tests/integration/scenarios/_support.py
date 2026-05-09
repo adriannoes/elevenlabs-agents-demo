@@ -31,9 +31,9 @@ _ENV_HINT: dict[ScenarioName, str] = {
 # URI segment in committed VCR cassettes (`simulate-conversation` path). Replay must send
 # the same URL the fixture recorded; unset env falls back here when the cassette is on disk.
 _CASSETTE_AGENT_ID: dict[ScenarioName, str] = {
-    "telecom": "agent_5801kqe3m9ftfe6tveceg5yqgbep",
-    "banking": "agent_0601kqfnhss2e3r8s436ny5qjtx7",
-    "healthcare": "agent_1101kqfnhz5afzrs59hj247zaefe",
+    "telecom": "agent_6801kqv0a5defk3841wy15q56cv6",
+    "banking": "agent_6701kqv0a71cevms7t4hbg9gz6a5",
+    "healthcare": "agent_7501kqv0aadyfx7spc2r93djw1bb",
 }
 
 

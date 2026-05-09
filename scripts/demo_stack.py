@@ -12,9 +12,10 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+from eleven_demo.paths import repo_root
+
+REPO_ROOT = repo_root()
 
 PROCS: list[subprocess.Popen[bytes]] = []
 
@@ -90,10 +91,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--skip-build",
         action="store_true",
-        help=(
-            "With `--web prod`, reuse an existing `.next` build "
-            "(skips `pnpm run build`)."
-        ),
+        help=("With `--web prod`, reuse an existing `.next` build (skips `pnpm run build`)."),
     )
     return parser.parse_args(argv)
 
@@ -122,17 +120,13 @@ def main(argv: list[str] | None = None) -> None:
     health = f"http://127.0.0.1:{args.bridge_port}/healthz"
 
     env = dict(os.environ)
-    env["INTERNAL_WS_BRIDGE_TOOLS_URL"] = (
-        f"http://127.0.0.1:{args.bridge_port}/convai/demo-tools"
-    )
+    env["INTERNAL_WS_BRIDGE_TOOLS_URL"] = f"http://127.0.0.1:{args.bridge_port}/convai/demo-tools"
 
     try:
         _wait_health(health, deadline_sec=args.health_timeout)
     except TimeoutError:
         terminate_children()
-        sys.stderr.write(
-            f"Timed out: ws_bridge did not respond at {health}. Check logs above.\n"
-        )
+        sys.stderr.write(f"Timed out: ws_bridge did not respond at {health}. Check logs above.\n")
         raise SystemExit(1) from None
 
     if not args.no_gradio:

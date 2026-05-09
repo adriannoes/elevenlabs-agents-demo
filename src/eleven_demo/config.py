@@ -29,9 +29,7 @@ class Settings(BaseSettings):
     openai_tts_response_format: str = "mp3"
     default_agent_voice_id: str | None = Field(
         default=None,
-        description=(
-            "Voice Library id for ElevenAgents (English or multilingual for EN demos)."
-        ),
+        description=("Voice Library id for ElevenAgents (English or multilingual for EN demos)."),
     )
     default_pt_voice_id: str | None = None
     default_en_voice_id: str | None = None

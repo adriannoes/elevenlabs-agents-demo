@@ -12,19 +12,17 @@ from __future__ import annotations
 
 import os
 import sys
-from pathlib import Path
 
 import httpx
-from dotenv import load_dotenv
 from elevenlabs.core import ApiError
 from pydantic import ValidationError
 
 from eleven_demo.client import get_client
+from eleven_demo.paths import load_repo_dotenv
 
 
 def _load_env() -> None:
-    repo_root = Path(__file__).resolve().parent.parent
-    load_dotenv(repo_root / ".env")
+    load_repo_dotenv()
 
 
 def check_elevenlabs() -> bool:

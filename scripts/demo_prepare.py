@@ -21,17 +21,12 @@ import sys
 from importlib import import_module
 from pathlib import Path
 
-from dotenv import load_dotenv
 from elevenlabs.core import ApiError
 
 from eleven_demo.client import get_client
 from eleven_demo.config import conversational_agent_voice_id, get_settings
-
-_ENV_KEY_BY_SCENARIO: dict[str, str] = {
-    "telecom": "DEMO_AGENT_ID_TELECOM",
-    "banking": "DEMO_AGENT_ID_BANKING",
-    "healthcare": "DEMO_AGENT_ID_HEALTHCARE",
-}
+from eleven_demo.paths import load_repo_dotenv
+from eleven_demo.scenarios.demo_cli import DEMO_SCENARIOS, SCENARIO_TO_DEMO_ENV_KEY
 
 
 def merge_dotenv_assignments(content: str, updates: dict[str, str]) -> str:
@@ -70,10 +65,6 @@ def merge_dotenv_assignments(content: str, updates: dict[str, str]) -> str:
     return "".join(out_lines)
 
 
-def _repo_root() -> Path:
-    return Path(__file__).resolve().parent.parent
-
-
 def _write_dotenv(repo_root: Path, updates: dict[str, str]) -> None:
     env_path = repo_root / ".env"
     previous = env_path.read_text(encoding="utf-8") if env_path.is_file() else ""
@@ -107,9 +98,8 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    repo_root = _repo_root()
+    repo_root = load_repo_dotenv(override=True)
     os.chdir(repo_root)
-    load_dotenv(repo_root / ".env", override=True)
 
     get_settings.cache_clear()
 
@@ -137,9 +127,8 @@ def main() -> int:
     print("ElevenLabs: OK")
 
     updates: dict[str, str] = {}
-    order = ("telecom", "banking", "healthcare")
-    for scenario in order:
-        env_key = _ENV_KEY_BY_SCENARIO[scenario]
+    for scenario in DEMO_SCENARIOS:
+        env_key = SCENARIO_TO_DEMO_ENV_KEY[scenario]
         print(f"Provisioning {scenario}...", flush=True)
         module = import_module(f"eleven_demo.scenarios.{scenario}")
         agent_id = module.provision()

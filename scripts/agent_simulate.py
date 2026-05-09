@@ -11,32 +11,20 @@ from rich.panel import Panel
 
 from eleven_demo.agents import simulate
 from eleven_demo.agents.simulation_messages import load_user_messages_from_json_file
-from eleven_demo.config import Settings, get_settings
+from eleven_demo.config import get_settings
+from eleven_demo.scenarios.demo_cli import (
+    DEMO_SCENARIOS,
+    MissingDemoAgentIdError,
+    require_demo_agent_id,
+)
 
-_AGENT_FIELD: dict[str, str] = {
-    "telecom": "demo_agent_id_telecom",
-    "banking": "demo_agent_id_banking",
-    "healthcare": "demo_agent_id_healthcare",
-}
+_EPILOG = """examples:
+  %(prog)s telecom "Check my line status."
+  %(prog)s banking --messages-file turns.json
 
-_ENV_HINT: dict[str, str] = {
-    "telecom": "DEMO_AGENT_ID_TELECOM",
-    "banking": "DEMO_AGENT_ID_BANKING",
-    "healthcare": "DEMO_AGENT_ID_HEALTHCARE",
-}
-
-
-def _resolve_agent_id(settings: Settings, scenario: str) -> str:
-    field = _AGENT_FIELD[scenario]
-    raw = getattr(settings, field)
-    if raw is None or not str(raw).strip():
-        env = _ENV_HINT[scenario]
-        msg = (
-            f"Missing {env}. Run provisioning and paste the printed id into .env:\n"
-            f"  uv run python scripts/agent_create.py {scenario}"
-        )
-        raise SystemExit(msg)
-    return str(raw).strip()
+  turns.json (UTF-8), array of user strings, one per turn:
+    ["Hello.", "I need to block my card."]
+"""
 
 
 def _resolve_messages(
@@ -56,16 +44,17 @@ def _resolve_messages(
     if args.message is not None:
         return [args.message]
     parser.error("Provide a message or --messages-file.")
-    raise AssertionError("unreachable")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Simulate user turn(s) against a demo agent (reads DEMO_AGENT_ID_*).",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=_EPILOG,
     )
     parser.add_argument(
         "scenario",
-        choices=("telecom", "banking", "healthcare"),
+        choices=DEMO_SCENARIOS,
         help="Which DEMO_AGENT_ID_* env var to use.",
     )
     parser.add_argument(
@@ -89,7 +78,14 @@ def main() -> None:
 
     messages = _resolve_messages(parser, args)
     settings = get_settings()
-    agent_id = _resolve_agent_id(settings, args.scenario)
+    try:
+        agent_id = require_demo_agent_id(settings, args.scenario)
+    except MissingDemoAgentIdError as exc:
+        msg = (
+            f"Missing {exc.env_key}. Run provisioning and paste the printed id into .env:\n"
+            f"  uv run python scripts/agent_create.py {exc.scenario}"
+        )
+        raise SystemExit(msg) from None
 
     result = simulate(agent_id, messages, language=args.language)
 

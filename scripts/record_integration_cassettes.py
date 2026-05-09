@@ -18,11 +18,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from dotenv import load_dotenv
-
-
-def _load_dotenv(repo_root: Path) -> None:
-    load_dotenv(repo_root / ".env")
+from eleven_demo.paths import load_repo_dotenv
+from eleven_demo.scenarios.demo_cli import DEMO_SCENARIOS, SCENARIO_TO_DEMO_ENV_KEY
 
 
 def _ensure_env(name: str) -> str:
@@ -60,18 +57,13 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    repo_root = Path(__file__).resolve().parents[1]
-    _load_dotenv(repo_root)
+    repo_root = load_repo_dotenv()
 
     _ensure_env("ELEVENLABS_API_KEY")
     _ensure_env("DEFAULT_PT_VOICE_ID")
     _ensure_env("OPENAI_API_KEY")
 
-    agent_envs = (
-        ("telecom", "DEMO_AGENT_ID_TELECOM"),
-        ("banking", "DEMO_AGENT_ID_BANKING"),
-        ("healthcare", "DEMO_AGENT_ID_HEALTHCARE"),
-    )
+    agent_envs = [(s, SCENARIO_TO_DEMO_ENV_KEY[s]) for s in DEMO_SCENARIOS]
     if args.provision:
         for scenario, env_name in agent_envs:
             if (os.environ.get(env_name) or "").strip():

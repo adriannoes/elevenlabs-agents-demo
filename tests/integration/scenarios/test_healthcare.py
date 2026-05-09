@@ -23,7 +23,7 @@ _HEALTHCARE_FIRST_TURN_TRIAGE: list[str] = [
     "Estou com febre alta há dois dias e cansaço.",
 ]
 
-_TRIAGE_AGENT_SUBSTRINGS: frozenset[str] = frozenset(("triagem", "orient"))
+_TRIAGE_AGENT_SUBSTRINGS: frozenset[str] = frozenset(("triagem", "orient", "triage"))
 
 
 @pytest.mark.integration
