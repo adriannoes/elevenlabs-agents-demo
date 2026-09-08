@@ -63,8 +63,8 @@ Example of an explicit dependency block at the start of a task:
 ```markdown
 ## Task 2.3: Verification request form
 
-**Trigger:** User clicks "Apply for Verified" on a listed agent card (Task 2.2).  
-**Enables:** Admins to process verification issues; dashboard to show Verified badge (Task 2.4) once schema is updated.  
+**Trigger:** User clicks "Apply for Verified" on a listed agent card (Task 2.2).
+**Enables:** Admins to process verification issues; dashboard to show Verified badge (Task 2.4) once schema is updated.
 **Depends on:** Task 2.2 (dashboard with listed agents); Task 2.5 (schema) for persisting verification in registry.
 ```
 
