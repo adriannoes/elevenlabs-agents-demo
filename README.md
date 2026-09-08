@@ -1,10 +1,14 @@
 # ElevenLabs agents and API exploration
 
-Hands-on **Python** lab for **[ElevenAgents](https://elevenlabs.io/docs/eleven-agents/overview)** and **[ElevenAPI](https://elevenlabs.io/docs/api-reference/introduction)**: Brazilian-market voice scenarios, latency checks, and thin browser surfaces. Use it to reason about tools, KB/RAG, retention posture, and how SDK pieces fit together — not as a product or compliance proof.
+[![CI](https://github.com/adriannoes/elevenlabs-agents-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/adriannoes/elevenlabs-agents-demo/actions/workflows/ci.yml)
 
-Step-by-step path: [end-to-end walkthrough](docs/walkthrough.md).
+Hands-on lab for **[ElevenAgents](https://elevenlabs.io/docs/eleven-agents/overview)** and **[ElevenAPI](https://elevenlabs.io/docs/api-reference/introduction)**: official SDKs (Python + JS), signed URLs, a small MCP tool server, and three voice scenarios. Built against **public docs only** — useful for reasoning about tools, KB/RAG, retention posture, and how the surfaces fit together. Not a product or a compliance proof.
 
-**New here?** Start with [Exploring this repository](docs/exploring-this-repo.md).
+**Read first:** [Learning experience](product/learning-experience.md) — field notes from integrating as a new developer (docs vs `elevenlabs/skills` vs the live API). Troubleshooting: [pitfalls](docs/pitfalls.md).
+
+The scenario **domain** is Brazilian (telecom SAC, CPF, LGPD, BRL). The **spoken conversation** on the three ElevenAgents tabs is English (`LANGUAGE = "en"`). TTS playground and vendor benchmark still use PT-BR voices and utterances.
+
+Step-by-step path: [end-to-end walkthrough](docs/walkthrough.md). Orientation: [Exploring this repository](docs/exploring-this-repo.md).
 
 ---
 
@@ -12,7 +16,8 @@ Step-by-step path: [end-to-end walkthrough](docs/walkthrough.md).
 
 - **Three agent verticals** — telecom SAC, digital banking (ZRM-minded), healthcare triage + KB/RAG.
 - **ElevenAPI** — TTS (sync, HTTP stream, WebSocket), batch and realtime STT, Voice Library helpers, Voice Isolator demo, optional **OpenAI TTS** leg for vendor comparison when `OPENAI_API_KEY` is set.
-- **Surfaces** — **Gradio** (full demo), optional **Next.js** (`elevenlabs/ui`, Telecom-only reference), optional **FastAPI** WebSocket TTS bridge under `apps/ws_bridge/` for local experiments.
+- **Surfaces** — **Gradio** (full demo), **Next.js** (`elevenlabs/ui` + signed URL, Telecom), **MCP stdio** (`scripts/mcp_telecom.py`), optional **FastAPI** WebSocket TTS bridge under `apps/ws_bridge/`.
+- **Docs drift check** — `scripts/skills_model_drift.py` runs regex heuristics: Turbo IDs listed without a deprecation note, and the Scribe keyterm cap.
 - **Quality** — typed settings, Pydantic tool schemas, REST retries, pytest (+ VCR integration), ruff, pre-commit (e.g. secret scanning).
 
 ---
@@ -22,10 +27,10 @@ Step-by-step path: [end-to-end walkthrough](docs/walkthrough.md).
 **Prerequisites:** Python **3.13+** and [`uv`](https://docs.astral.sh/uv/).
 
 ```bash
-git clone https://github.com/adriannoes/elevenlabs-agents-api-playground.git
-cd elevenlabs-agents-api-playground
+git clone https://github.com/adriannoes/elevenlabs-agents-demo.git
+cd elevenlabs-agents-demo
 cp .env.example .env
-uv sync --extra dev
+uv sync --extra dev --extra mcp
 uv run python scripts/verify_api_keys.py
 ```
 
@@ -65,7 +70,9 @@ uv run python scripts/agent_create.py healthcare
 uv run python apps/gradio_app.py
 ```
 
-Open the URL Gradio prints. Tabs: **TTS Playground**, **Telecom**, **Banking**, **Healthcare**, **Latency**, **Vendor benchmark** (ElevenLabs vs OpenAI when both keys and `DEFAULT_PT_VOICE_ID` are set for the ElevenLabs leg).
+Open the URL Gradio prints. Tabs: **TTS Playground**, **Telecom**, **Banking**, **Health + RAG**, **Latency**, **Benchmark** (ElevenLabs vs OpenAI when both keys and `DEFAULT_PT_VOICE_ID` are set for the ElevenLabs leg).
+
+![Gradio Telecom tab after Start session — ElevenAgents widget on a signed URL](docs/assets/telecom-tab.png)
 
 Provisioning detail: [`product/guides/demo-agent-setup.md`](product/guides/demo-agent-setup.md).
 
@@ -76,7 +83,7 @@ Provisioning detail: [`product/guides/demo-agent-setup.md`](product/guides/demo-
 | Surface | Role |
 | --- | --- |
 | `uv run python apps/gradio_app.py` | Full demo: all three agents, TTS playground, latency, vendor benchmark. Reads `DEMO_AGENT_ID_*` from the **repo** `.env`. |
-| `pnpm --dir apps/web dev` | Small **Next.js** reference: [`elevenlabs/ui`](https://github.com/elevenlabs/ui) + signed URL so the browser never sees `ELEVENLABS_API_KEY`. **Telecom only** — `DEMO_AGENT_ID_TELECOM` in `apps/web/.env.local`. |
+| `pnpm --dir apps/web dev` | **Next.js** reference: [`elevenlabs/ui`](https://github.com/elevenlabs/ui) + `@elevenlabs/elevenlabs-js` signed URL so the browser never sees `ELEVENLABS_API_KEY`. **Telecom only** — `DEMO_AGENT_ID_TELECOM` in `apps/web/.env.local`. |
 
 Next.js intentionally covers **Telecom only**: it demonstrates the React registry and signed URLs without re-implementing Banking and Healthcare. Reuse the Telecom `agent_id` in `apps/web/.env.local`. Setup: [`apps/web/README.md`](apps/web/README.md).
 
@@ -87,7 +94,25 @@ pnpm install
 pnpm dev
 ```
 
-Requires Node **20+** and **pnpm**.
+Requires Node **20+** and **pnpm**. Same Telecom `agent_id` as Gradio; JS package map is in the [learning experience](product/learning-experience.md#4-three-elevenlabs-js-packages-one-warning-still-easy-to-miss).
+
+---
+
+## MCP (lab tool server)
+
+Stdio server for the telecom mock — not the [hosted ElevenLabs MCP](https://elevenlabs.io/docs/eleven-agents/operate/hosted-mcp). Install the optional extra first (`uv sync --extra mcp`):
+
+```bash
+uv run python scripts/mcp_telecom.py
+```
+
+Setup: [`docs/mcp-lab-server.md`](docs/mcp-lab-server.md).
+
+Compare upstream skills to Models (network; exits 1 on drift):
+
+```bash
+uv run python scripts/skills_model_drift.py
+```
 
 ---
 
@@ -116,25 +141,26 @@ These hit the live API and may consume credits. Do not commit secrets or unredac
 ## Repository layout
 
 ```text
-src/eleven_demo     Library (client, config, TTS, STT, voices, agents, scenarios, benchmarks, metrics)
+src/eleven_demo     Library (client, config, TTS, STT, voices, agents, MCP, scenarios, benchmarks, metrics)
 apps/gradio_app.py  Primary UI
-apps/web/           Optional Next.js + elevenlabs/ui (Telecom)
+apps/web/           Next.js + elevenlabs/ui (Telecom, signed URL)
 apps/ws_bridge/     Optional FastAPI WebSocket TTS bridge (local)
-scripts/            CLIs (provision, simulate, demos, benchmark, evidence helper)
+scripts/            CLIs (provision, simulate, demos, MCP, skills drift, benchmark)
 tests/              Unit + VCR integration tests
 docs/               Walkthrough, scenarios, benchmarks methodology, technical report, design notes
 data/kb/healthcare/  Fictional KB seeds
 data/samples/        Sample audio for STT
 engineering/        Delivery record, ADRs
 product/guides/     Operator-facing agent setup
-.cursor/skills/     ElevenLabs-focused Cursor skills (optional)
+.cursor/rules/      Cursor rules (SDK, Python, security, tests)
+.cursor/skills/     ElevenLabs-focused Cursor skills
 ```
 
 ---
 
 ## Architecture
 
-The library `src/eleven_demo` is the single ElevenLabs integration point — every Python surface (CLIs, Gradio, the WebSocket bridge) imports it, and SDK access flows through `get_client()` (one factory with retries on 429/5xx, no ad-hoc constructors). The Node side mirrors that boundary on its own toolchain: `ELEVENLABS_API_KEY` lives only in `apps/web` server code; the browser receives a short-lived **signed URL** and never sees the key.
+The library `src/eleven_demo` is the single integration point — CLIs, Gradio, the WebSocket bridge, and the lab MCP server import it. Live ElevenLabs access goes through `get_client()` (retries on 429/5xx). The MCP server only wraps local mocks; it does not call the hosted MCP. The Node side mirrors that boundary on its own toolchain: `ELEVENLABS_API_KEY` lives only in `apps/web` server code; the browser receives a short-lived **signed URL** and never sees the key.
 
 ```mermaid
 flowchart TB
@@ -143,10 +169,12 @@ flowchart TB
         scripts["scripts/*<br/>CLIs"]
         gradio["apps/gradio_app.py"]
         bridge["apps/ws_bridge<br/>(FastAPI)"]
+        mcp["scripts/mcp_telecom.py<br/>(stdio MCP)"]
         lib["src/eleven_demo<br/>get_client() + modules"]
         scripts --> lib
         gradio --> lib
         bridge --> lib
+        mcp --> lib
     end
 
     subgraph web["Next.js (apps/web)"]
@@ -179,18 +207,22 @@ Two flows worth calling out:
 
 ## Further reading
 
+- [Learning experience](product/learning-experience.md) — docs vs skills vs live API
+- [Pitfalls](docs/pitfalls.md) — webhook schema, simulate, isolator, voice locale
+- [MCP lab server](docs/mcp-lab-server.md)
+- [Upstream skills notes](docs/upstream-skills-notes.md) — patch sketches for `elevenlabs/skills`
 - [Exploring this repository](docs/exploring-this-repo.md)
 - [Extending this lab](docs/extending-this-lab.md)
-- [Delivery record](engineering/tasks/tasks-prd-elevenlabs-vertical-exploration.md)
 - [Walkthrough](docs/walkthrough.md)
 - [TTS vendor methodology](docs/benchmarks/tts-vendor-comparison.md)
 - [Technical exploration report](docs/reports/technical-exploration-report.md)
-- [Visual system](docs/design/visual-system.md)
 - [PRD](product/prd/prd-elevenlabs-vertical-exploration.md)
 
 ---
 
 ## Tests and hygiene
+
+GitHub Actions runs `ruff` plus `pytest -n auto -m "not integration"` on pull requests and on pushes to `main`. That gate does **not** call the live API: there is no API key in CI (`tests/conftest.py` sets a placeholder so Settings loads). Integration tests are excluded by marker and replay locally via VCR:
 
 ```bash
 uv run pytest -n auto -m "not integration"
