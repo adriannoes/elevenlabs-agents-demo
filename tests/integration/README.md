@@ -3,7 +3,7 @@
 Scenario simulate cassettes use VCR ``match_on`` that includes the HTTP **body**, so multiple
 ``simulate`` requests to the same path do not replay the wrong conversation turn.
 
-- **VCR replay** (committed `cassettes/*.yaml`): no live ElevenLabs/OpenAI traffic for matched HTTP exchanges; you still need a non-empty `ELEVENLABS_API_KEY` in the environment so `Settings` can load (use a placeholder such as `xi-local-replay-only` if the key is never sent on the wire during replay).
+- **VCR replay** (committed `cassettes/*.yaml`): no live ElevenLabs/OpenAI traffic for matched HTTP exchanges. When `ELEVENLABS_API_KEY` is unset, `tests/conftest.py` sets `xi-ci-placeholder` so `Settings` can load; cassette-backed tests replay, tests without a cassette skip.
 - **Recording** (missing cassette + real keys): **consumes API credits**. Prefer doing this on a developer machine, then commit sanitized YAML (headers with secrets are filtered by `@pytest.mark.vcr`).
 
 ## Record scenario + vendor cassettes

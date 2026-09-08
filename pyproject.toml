@@ -107,7 +107,7 @@ ignore_missing_imports = true
 testpaths = ["tests"]
 asyncio_mode = "auto"
 markers = [
-    "integration: tests that hit the live ElevenLabs API or replay VCR cassettes (skipped without ELEVENLABS_API_KEY)",
+    "integration: hits the live ElevenLabs API or replays VCR cassettes (skipped when no real ELEVENLABS_API_KEY and no cassette on disk)",
     "slow: tests that take more than 1 second",
 ]
 addopts = [

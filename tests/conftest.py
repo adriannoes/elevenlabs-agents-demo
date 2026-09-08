@@ -20,6 +20,12 @@ if TYPE_CHECKING:
 
 load_dotenv()
 
+# Unit tests must collect without a real key (CI has no .env). Integration tests
+# treat this placeholder as "no live credentials".
+_CI_PLACEHOLDER_API_KEY = "xi-ci-placeholder"
+if not os.environ.get("ELEVENLABS_API_KEY", "").strip():
+    os.environ["ELEVENLABS_API_KEY"] = _CI_PLACEHOLDER_API_KEY
+
 
 def _vcr_cassette_yaml_path(request: FixtureRequest) -> Path:
     """Resolve cassette path matching pytest-vcr defaults.
@@ -43,7 +49,7 @@ def _skip_integration_without_key(request: FixtureRequest) -> None:
         return
 
     api_key = os.environ.get("ELEVENLABS_API_KEY", "").strip()
-    if api_key:
+    if api_key and api_key != _CI_PLACEHOLDER_API_KEY:
         return
 
     cassette = _vcr_cassette_yaml_path(request)

@@ -19,7 +19,6 @@ from elevenlabs.types import (
 from eleven_demo.agents.factory import upsert_agent
 from eleven_demo.config import (
     convai_demo_tool_webhook_fields,
-    conversational_agent_voice_id,
     get_settings,
     resolve_conversational_agent_voice_id,
 )
@@ -133,8 +132,6 @@ class _LazyScenarioView:
 
 SCENARIO = _LazyScenarioView()
 
-VOICE_ID: str | None = conversational_agent_voice_id(get_settings())
-
 
 def provision() -> str:
     """Idempotently provision the banking demo agent."""
@@ -150,7 +147,6 @@ __all__ = [
     "SUCCESS_CRITERIA",
     "SYSTEM_PROMPT",
     "TOOL_NAMES",
-    "VOICE_ID",
     "BankingScenario",
     "provision",
 ]
