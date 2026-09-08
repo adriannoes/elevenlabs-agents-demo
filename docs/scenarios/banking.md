@@ -1,10 +1,10 @@
 # Banking — Digital Banking Demo
 
-Storytelling for the **Digital Banking** Brazilian Portuguese banking scenario (`eleven_demo.scenarios.banking`). Used by the Gradio **Banking** tab and linked from the repository walkthrough.
+Storytelling for the **Digital Banking** Brazilian-domain scenario (`eleven_demo.scenarios.banking`; conversation language is English). Used by the Gradio **Banking** tab and linked from the repository walkthrough.
 
 ## Persona
 
-**Rafael**, 42, notices an unfamiliar card transaction while commuting. He wants to check account status, block a card if needed, and understand whether a human specialist should take over. He expects a calm Portuguese voice assistant, but he also expects the bank to authenticate him before revealing account details or taking card actions.
+**Rafael**, 42, notices an unfamiliar card transaction while commuting. He wants to check account status, block a card if needed, and understand whether a human specialist should take over. He expects a calm Portuguese voice assistant; in this lab the agent replies in English. He also expects the bank to authenticate him before revealing account details or taking card actions.
 
 **Risk, compliance, and product** stakeholders care less about a flashy voice demo and more about the control pattern: identity verification before tools, masked outputs, human escalation for fraud or disputes, and data minimization for financial PII.
 
@@ -20,19 +20,19 @@ Constraints reflected in code:
 
 ## Demo flow
 
-1. **Provision**  
+1. **Provision**
    Run `uv run python scripts/agent_create.py banking`, then set `DEMO_AGENT_ID_BANKING` in `.env` (see `product/guides/demo-agent-setup.md`).
 
-2. **Gradio**  
+2. **Gradio**
    Start `uv run python apps/gradio_app.py`, open the **Banking** tab, and click **Start session**. The widget loads through a signed conversation URL; the raw API key and agent configuration remain server-side.
 
-3. **Conversation**  
-   Speak in PT-BR. The first message asks for CPF and an approximate last movement amount. After those inputs, ask for a balance summary or card block/replacement. For fraud, regulatory disputes, or ambiguous requests, the agent should offer `transfer_to_human`.
+3. **Conversation**
+   Speak in English. The first message asks for CPF and an approximate last movement amount. After those inputs, ask for a balance summary or card block/replacement. For fraud, regulatory disputes, or ambiguous requests, the agent should offer `transfer_to_human`.
 
-4. **Privacy posture**  
+4. **Privacy posture**
    The Banking agent is provisioned with per-agent Zero Retention Mode. That means no stored call recording, transcript, or post-call metadata containing PII should be retained by ElevenLabs systems for that agent; debugging should rely on controlled test runs or downstream systems you explicitly operate.
 
-5. **Observability**  
+5. **Observability**
    Use ElevenLabs Agent Testing or the dashboard for functional inspection when ZRM is not preventing history review. For ZRM-enabled production-style flows, plan a compliant post-call webhook if you need operational records.
 
 <!-- Screenshot placeholders (replace after capture): -->
@@ -58,8 +58,8 @@ Illustrative framing only — calibrate with real contact-center volume, fraud q
 | **Fraud triage time** | ↓ faster routing once the assistant identifies dispute or fraud language |
 | **Compliance confidence** | ↑ when authentication, masking, ZRM, and escalation are explicit rather than implicit |
 
-**Back-of-envelope** (replace variables):  
-`monthly_value ≈ authenticated_self_service_cases × avg_minutes_saved × blended_cost_per_minute − platform_and_control_costs`.  
+**Back-of-envelope** (replace variables):
+`monthly_value ≈ authenticated_self_service_cases × avg_minutes_saved × blended_cost_per_minute − platform_and_control_costs`.
 The demo proves **workflow shape** and security posture, not production ROI.
 
 ## Talking points

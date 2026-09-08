@@ -195,6 +195,8 @@ Expected artifact paths after the release run:
 
 ### Evidence snapshot (local regeneration, 2026-04-30)
 
+Snapshot at the time of the report (unit count has since grown).
+
 | Gate | Result |
 | --- | --- |
 | Unit tests (`-m "not integration"`, xdist) | 118 passed (JUnit: `artifacts/reports/pytest.xml`) |

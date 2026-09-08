@@ -1,10 +1,10 @@
 # Healthcare — Triage Demo
 
-Storytelling for the **Healthcare Triage** Brazilian Portuguese healthcare triage scenario (`eleven_demo.scenarios.healthcare`). Used by the Gradio **Healthcare** tab and linked from the repository walkthrough.
+Storytelling for the **Healthcare Triage** Brazilian-domain scenario (`eleven_demo.scenarios.healthcare`; conversation language is English). Used by the Gradio **Healthcare** tab and linked from the repository walkthrough.
 
 ## Persona
 
-**Ana**, 51, has had a fever for two days and is unsure whether she should schedule a routine appointment or seek urgent care. She wants fast guidance in Portuguese, but she does not want a voice assistant to diagnose her, prescribe medication, or repeat sensitive health details out loud.
+**Ana**, 51, has had a fever for two days and is unsure whether she should schedule a routine appointment or seek urgent care. She wants fast guidance in Portuguese; in this lab the agent replies in English. She does not want a voice assistant to diagnose her, prescribe medication, or repeat sensitive health details out loud.
 
 **Clinical operations, compliance, and product** stakeholders care about a different question: can a voice agent use approved internal guidance, stay inside triage boundaries, surface the source documents behind its behavior, and escalate when symptoms suggest emergency care or ambiguity?
 
@@ -43,19 +43,19 @@ The first Healthcare provisioning run can be slower than Telecom or Banking beca
 
 ## Demo flow
 
-1. **Provision**  
+1. **Provision**
    Run `uv run python scripts/agent_create.py healthcare`, then set `DEMO_AGENT_ID_HEALTHCARE` in `.env` (see `product/guides/demo-agent-setup.md`).
 
-2. **Gradio**  
+2. **Gradio**
    Start `uv run python apps/gradio_app.py`, open the **Healthcare** tab, and click **Start session**. The widget loads through a signed conversation URL.
 
-3. **Source documents**  
+3. **Source documents**
    The Healthcare tab also renders a source-documents panel from `SCENARIO.kb_doc_ids`, making the RAG setup visible to reviewers instead of hiding it inside the remote agent configuration.
 
-4. **Conversation**  
+4. **Conversation**
    Speak in **English** with the configured agent. Describe a symptom (for example: "I've had a high fever for two days with a cough") for triage-only guidance. To exercise **booking**, say a fictional token such as **VITA-1001** plus **morning** or **afternoon** — there is no CPF lookup in this sandbox; do not add real CPF to the knowledge base.
 
-5. **Observability**  
+5. **Observability**
    Use ElevenLabs Agent Testing or the dashboard to inspect behavior when retention settings allow it. With ZRM-enabled flows, plan a compliant post-call webhook or downstream event stream if operational records are required.
 
 <!-- Screenshot placeholders (replace after capture): -->
@@ -82,15 +82,15 @@ Illustrative framing only — calibrate with real triage volume, clinician revie
 | **Operational load** on front desk / nurse line | ↓ fewer repetitive scheduling and specialty-routing questions |
 | **Policy adherence** | ↑ approved KB language is reused instead of improvised by the assistant |
 
-**Back-of-envelope** (replace variables):  
-`monthly_value ≈ triage_cases_deflected × avg_minutes_saved × blended_staff_cost_per_minute − platform_and_governance_costs`.  
+**Back-of-envelope** (replace variables):
+`monthly_value ≈ triage_cases_deflected × avg_minutes_saved × blended_staff_cost_per_minute − platform_and_governance_costs`.
 The demo proves the **RAG + voice + escalation pattern**, not clinical or financial outcomes.
 
 ## Talking points
 
 - **RAG makes source material inspectable** — the source panel and seed files show what the assistant had available.
 - **Safety-first prompt boundary** — the agent is told not to diagnose or prescribe, and to escalate urgent symptoms.
-- **Small documents beat broad dumping** — five focused Markdown seeds are easier to review, update, and reason about than one large policy blob.
+- **Small documents beat broad dumping** — six focused Markdown seeds are easier to review, update, and reason about than one large policy blob.
 - **ZRM for medical PII** — the scenario intentionally trades off stored conversation history for data minimization.
 - **Healthcare is server-side state** — the RAG behavior lives in the ElevenLabs agent configuration, so the Gradio UI displays sources but does not implement retrieval itself.
 
