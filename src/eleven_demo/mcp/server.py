@@ -12,7 +12,7 @@ tool is a single string parameter, not the nested input model.
 from __future__ import annotations
 
 from importlib.metadata import PackageNotFoundError, version
-from typing import Annotated, Any
+from typing import Annotated
 
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
@@ -20,6 +20,7 @@ from pydantic import Field, ValidationError
 
 from eleven_demo.agents.tools import (
     LookupTelecomAccountInput,
+    LookupTelecomAccountOutput,
     mock_lookup_telecom_account,
     normalize_cpf_digits,
 )
@@ -44,7 +45,7 @@ def _package_version() -> str:
 
 def lookup_telecom_account_tool(
     cpf: Annotated[str, Field(description=_CPF_DESCRIPTION)],
-) -> dict[str, Any]:
+) -> LookupTelecomAccountOutput:
     """Look up a fictional telecom account by CPF (11 digits, separators allowed)."""
 
     try:
@@ -56,7 +57,7 @@ def lookup_telecom_account_tool(
             f"got a value with {digit_count} digits"
         )
         raise ToolError(msg) from None
-    return mock_lookup_telecom_account(inp).model_dump(mode="json")
+    return mock_lookup_telecom_account(inp)
 
 
 def build_server() -> MCPServer:

@@ -122,7 +122,7 @@ There are now three MCP stories a new developer can land on, and they are easy t
 | **Hosted MCP** `https://api.elevenlabs.io/v1/mcp` | Manage agents from Claude / Cursor (OAuth, no local process) | Documented, not reimplemented — it is a platform product |
 | **Archived local MCP** `elevenlabs/elevenlabs-mcp` | Historical stdio server with an API key | Not vendored; README points at the archive notice |
 | **Agents → external MCP tools** | An ElevenLabs agent calls *your* MCP server | Not covered here; the lab server is stdio-only (an agent-attached MCP needs an HTTP transport and a reachable URL) |
-| **This repo's stdio server** | One mock tool, same contract as the webhook | `uv run python scripts/mcp_telecom.py` |
+| **This repo's stdio server** | One mock tool (same deterministic lookup as the webhook; MCP ignores extra args) | `uv run python scripts/mcp_telecom.py` |
 
 The lab server exposes `lookup_telecom_account` — the same deterministic mock the Telecom agent webhook uses — over MCP stdio. It exists so you can feel "I attached a tool server" without standing up OAuth or a public tunnel. It is explicitly **not** an official ElevenLabs MCP.
 
