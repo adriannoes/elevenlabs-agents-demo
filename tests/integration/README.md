@@ -24,4 +24,4 @@ The script invokes pytest with ``--vcr-record=all`` so existing YAML is **re-rec
 
 `tests/integration/scenarios/` do **not** require `DEFAULT_PT_VOICE_ID` for `simulate` calls; they **do** require the corresponding `DEMO_AGENT_ID_*` when recording, or a committed cassette plus a placeholder API key for replay.
 
-After migrating scenario agents to English-only (`language: en`) and new stable names (`*-en`), older scenario cassettes were removed; **re-record** with `scripts/record_integration_cassettes.py` when you have live agent ids and an API key.
+After migrating scenario agents to English-only (`language: en`) and new stable names (`*-en`), each committed cassette keeps **one** English agent URI (see `_CASSETTE_AGENT_ID` in `tests/integration/scenarios/_support.py`). Replay with a leftover `DEMO_AGENT_ID_*` that does not match that URI fails VCR matching. **Re-record** with `scripts/record_integration_cassettes.py` when you have live agent ids and an API key.
