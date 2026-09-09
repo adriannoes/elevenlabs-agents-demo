@@ -22,7 +22,6 @@ from eleven_demo.agents.factory import upsert_agent
 from eleven_demo.agents.kb import compute_rag, ensure_kb_file_uploaded
 from eleven_demo.config import (
     convai_demo_tool_webhook_fields,
-    conversational_agent_voice_id,
     get_settings,
     resolve_conversational_agent_voice_id,
 )
@@ -170,8 +169,6 @@ class _LazyScenarioView:
 
 SCENARIO = _LazyScenarioView()
 
-VOICE_ID: str | None = conversational_agent_voice_id(get_settings())
-
 
 def provision() -> str:
     """Provision healthcare demo: KB bundle, RAG, then idempotent agent upsert."""
@@ -188,7 +185,6 @@ __all__ = [
     "SUCCESS_CRITERIA",
     "SYSTEM_PROMPT",
     "TOOL_NAMES",
-    "VOICE_ID",
     "HealthcareScenario",
     "healthcare_kb_seed_paths",
     "provision",

@@ -2,6 +2,12 @@
 
 You have run the [walkthrough](walkthrough.md) and explored the [Gradio app](../README.md#run-the-demo-gradio). This page lists **learning-oriented** directions—ways to keep experimenting with ElevenLabs—not a commitment to turn this repository into a shipping product.
 
+## Already in the lab (start here)
+
+- **MCP stdio** — [`docs/mcp-lab-server.md`](mcp-lab-server.md). Next step: expose the same mock over an HTTP MCP transport behind a tunnel and attach it to the Telecom agent as an external MCP tool (stdio cannot be attached).
+- **Skills vs Models drift** — `uv run python scripts/skills_model_drift.py`. Next step: send the patch in [`docs/upstream-skills-notes.md`](upstream-skills-notes.md) to `elevenlabs/skills` if the live diff still fails.
+- **Pitfalls** — [`docs/pitfalls.md`](pitfalls.md). Next step: add one more fixture when you hit a new live-API contract.
+
 ## Telephony and CRM
 
 Voice agents often terminate on **PSTN or SIP** and hand outcomes to a **CRM**. The public docs cover telephony providers; this repo stays UI- and script-first. A natural next step is a small spike that registers the same agent id with a test number and records call ids in a notebook or spreadsheet.

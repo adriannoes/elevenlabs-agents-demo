@@ -14,6 +14,7 @@ This document records the approved technology choices for the `eleven-demo` repo
 | WebSocket client | websockets | Reference Python implementation, asyncio-native. |
 | Demo UI | Gradio | Fastest path to a polished AI demo with audio I/O; minutes to add a tab. |
 | Backend service | FastAPI (minimal) | Used only for the WebSocket bridge demo. ASGI native, plays well with `websockets`. |
+| MCP (lab) | `mcp` v2 `MCPServer` stdio | One mock tool (`lookup_telecom_account`). Not the hosted ElevenLabs MCP (`/v1/mcp`). |
 | ASGI server | Uvicorn | Standard pair for FastAPI. |
 | CLI output | rich | Pretty tables and progress bars without HTML overhead. |
 | Linting + formatting | ruff | Replaces flake8, isort, black, pylint; single tool, 10-100x faster. |
@@ -21,7 +22,7 @@ This document records the approved technology choices for the `eleven-demo` repo
 | Test runner | pytest | Industry standard. |
 | Async tests | pytest-asyncio | `asyncio_mode = "auto"`. |
 | Parallel tests | pytest-xdist | Fast unit loop with `-n auto`. |
-| HTTP recording | pytest-vcr (vcrpy) | Records ElevenLabs API responses once; replays in CI without burning credits. |
+| HTTP recording | pytest-vcr (vcrpy) | Records ElevenLabs API responses once; replayed locally. CI runs unit tests only. |
 | Coverage | pytest-cov | Single dedicated invocation (no xdist) per the testing-standards rule. |
 | Pre-commit | pre-commit + ruff + gitleaks + detect-private-key | Catches lints and secrets before commit. |
 
@@ -36,6 +37,12 @@ This document records the approved technology choices for the `eleven-demo` repo
 
 Demo-local UI tokens and brand guardrails: [`docs/design/visual-system.md`](../../docs/design/visual-system.md).
 Official logo/symbol files (when committed): **`docs/design/assets/logos/`** and **`docs/design/assets/symbols/`**.
+
+### Lab MCP server vs hosted ElevenLabs MCP
+
+- **This repo** ships a stdio `MCPServer` process (`scripts/mcp_telecom.py`, `mcp` SDK v2) that wraps the existing telecom mock. Purpose: feel MCP tool attachment without OAuth or a public URL.
+- **Hosted ElevenLabs MCP** (`https://api.elevenlabs.io/v1/mcp`) manages workspace agents from Claude/Cursor. Out of scope to reimplement; documented in `docs/mcp-lab-server.md`.
+- **Archived `elevenlabs/elevenlabs-mcp`** (2026-08-20) is not vendored.
 
 ### Multi-stack by design (Python primary, Node-only secondary surface)
 
@@ -70,7 +77,7 @@ Official logo/symbol files (when committed): **`docs/design/assets/logos/`** and
 - **Flash v2.5**: lowest TTFB (~75-150 ms), good enough quality for conversational demos, supports Brazilian Portuguese.
 - **Multilingual v2**: higher quality, significantly higher latency. Use for the Healthcare scenario and Voice Library exploration.
 - **v3**: most expressive (tags, emotion). Use for marketing-style demos in the TTS Playground tab.
-- **Turbo v2.5**: balanced; this is what ElevenAgents uses by default.
+- **English Convai agents**: `eleven_flash_v2` (Convai accepts flash_v2 / turbo_v2 for English; Turbo is deprecated on the Models page).
 
 Pinned in `.env.example`; per-call overrides allowed.
 

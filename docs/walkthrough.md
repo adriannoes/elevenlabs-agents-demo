@@ -1,18 +1,18 @@
 # End-to-End Walkthrough
 
-This walkthrough takes a new reader from clone to the main demo paths in this repository: TTS, three ElevenAgents scenarios, RAG-backed healthcare triage, latency benchmarking, the optional React reference surface, and the local WebSocket bridge.
+This walkthrough takes a new reader from clone to the main demo paths in this repository: TTS, three ElevenAgents scenarios, RAG-backed healthcare triage, latency benchmarking, the Next.js reference surface, and the local WebSocket bridge.
 
-The repo is a learning and product-engineering exploration of ElevenAgents and ElevenAPI. It is not a production application, compliance certification, or clinical / financial service.
+The repo is a learning and product-engineering exploration of ElevenAgents and ElevenAPI. It is not a production application, compliance certification, or clinical / financial service. Scenario **domain** is Brazilian (CPF, LGPD, BRL); the three voice agents **speak English**.
 
 ## 1. Opening — What This Repo Explores
 
 Start with the repository setup:
 
 ```bash
-git clone https://github.com/adriannoes/elevenlabs-agents-api-playground.git
-cd elevenlabs-agents-api-playground
+git clone https://github.com/adriannoes/elevenlabs-agents-demo.git
+cd elevenlabs-agents-demo
 cp .env.example .env
-uv sync --extra dev
+uv sync --extra dev --extra mcp
 uv run python scripts/verify_api_keys.py
 ```
 
@@ -34,7 +34,7 @@ Useful entry points:
 
 ## 2. Telecom Demo
 
-The Telecom path demonstrates a PT-BR customer-care voice agent with identity check, server-tool lookup, and human escalation.
+The Telecom path demonstrates a Brazilian-domain customer-care voice agent (English conversation) with identity check, server-tool lookup, and human escalation.
 
 Provision the agent:
 
@@ -51,7 +51,7 @@ DEMO_AGENT_ID_TELECOM=<agent_id_from_terminal>
 Optional simulation smoke test:
 
 ```bash
-uv run python scripts/agent_simulate.py telecom "Quero consultar minha linha."
+uv run python scripts/agent_simulate.py telecom "I want to check my line."
 ```
 
 Multi-turn simulation (JSON file: array of user strings, one per turn):
@@ -63,7 +63,7 @@ uv run python scripts/agent_simulate.py telecom --messages-file path/to/turns.js
 Example `turns.json`:
 
 ```json
-["Olá.", "Quero consultar minha linha.", "Meu CPF é 123.456.789-09."]
+["Hello.", "I want to check my line.", "My CPF is 123.456.789-09."]
 ```
 
 Run the Gradio app and open the Telecom tab:
@@ -72,7 +72,7 @@ Run the Gradio app and open the Telecom tab:
 uv run python apps/gradio_app.py
 ```
 
-Expected behavior: click **Start session**, allow microphone access, and speak in PT-BR. The agent should ask for CPF before account lookup and offer transfer for sensitive, off-topic, or human-requested cases.
+Expected behavior: click **Start session**, allow microphone access, and speak in English. The agent should ask for CPF before account lookup and offer transfer for sensitive, off-topic, or human-requested cases.
 
 Fallbacks:
 
@@ -99,7 +99,7 @@ DEMO_AGENT_ID_BANKING=<agent_id_from_terminal>
 Optional simulation smoke test:
 
 ```bash
-uv run python scripts/agent_simulate.py banking "Quero bloquear meu cartão."
+uv run python scripts/agent_simulate.py banking "I want to block my card."
 ```
 
 Run the Gradio app and open the Banking tab:
@@ -132,12 +132,12 @@ Copy the printed agent ID into `.env`:
 DEMO_AGENT_ID_HEALTHCARE=<agent_id_from_terminal>
 ```
 
-The first run may be slower because it uploads the five Markdown seeds under `data/kb/healthcare/` and requests RAG indexes. Later runs should reuse documents by name.
+The first run may be slower because it uploads the six Markdown seeds under `data/kb/healthcare/` and requests RAG indexes. Later runs should reuse documents by name.
 
 Optional simulation smoke test:
 
 ```bash
-uv run python scripts/agent_simulate.py healthcare "Estou com febre alta há dois dias e tosse."
+uv run python scripts/agent_simulate.py healthcare "I have had a high fever for two days and a cough."
 ```
 
 Run the Gradio app and open the Healthcare tab:
@@ -218,7 +218,7 @@ uv run python apps/gradio_app.py
 
 Use this when you want every demo in one local UI: TTS Playground, Telecom, Banking, Healthcare + RAG, Latency, and Vendor Benchmark.
 
-### React / Next.js: Optional Reference Surface
+### React / Next.js: Reference Surface
 
 `apps/web/` is a minimal Next.js app using the official [`elevenlabs/ui`](https://github.com/elevenlabs/ui) registry (`Orb`, `ConversationBar`, `LiveWaveform`) plus `@elevenlabs/react`.
 
@@ -257,8 +257,10 @@ Architecture overview:
 - `src/eleven_demo/scenarios/` defines vertical agent contracts.
 - `src/eleven_demo/agents/` owns tools, KB helpers, provisioning, and simulation.
 - `apps/gradio_app.py` is the primary demo UI.
-- `apps/web/` is the optional React reference surface.
+- `apps/web/` is the React reference surface (signed URL).
 - `apps/ws_bridge/` is a local-only FastAPI bridge for WebSocket TTS experiments.
+- `scripts/mcp_telecom.py` is the lab MCP stdio server (telecom mock).
+- `scripts/skills_model_drift.py` diffs `elevenlabs/skills` against Models docs.
 
 Run the WebSocket bridge smoke path:
 
@@ -299,6 +301,8 @@ uv run python scripts/conversations_list.py --id <conversation_id>
 ```
 
 The CLI uses the Conversations API and redacts common CPF, email, phone, and card-number patterns before printing summaries. This is the local alternative to running a post-call webhook receiver in the demo repo. For a reference checklist on building a real webhook receiver (verification, PII, HTTPS), see [Post-call webhooks pattern](patterns/post-call-webhooks.md). Rationale for not hosting a receiver in this lab remains in [Tech Stack Decisions](../engineering/architecture/tech-stack-decisions.md).
+
+Field notes and last-mile API contracts: [learning experience](../product/learning-experience.md), [pitfalls](pitfalls.md), [MCP lab server](mcp-lab-server.md), [upstream skills notes](upstream-skills-notes.md).
 
 **Documentation backlog** (detail and checkboxes): [delivery record](../engineering/tasks/tasks-prd-elevenlabs-vertical-exploration.md). High-surface files: [`docs/benchmarks/tts-vendor-comparison.md`](benchmarks/tts-vendor-comparison.md), [`docs/reports/technical-exploration-report.md`](reports/technical-exploration-report.md), and generated evidence under `artifacts/` (see `scripts/generate_evidence_report.py`).
 

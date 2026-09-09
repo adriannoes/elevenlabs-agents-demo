@@ -25,8 +25,8 @@ At the repository root:
    - **`ELEVENLABS_API_KEY`** — from your account ([API keys](https://elevenlabs.io/app/settings/api-keys)).
    - **One agent voice id** (first match wins):
      - **`DEFAULT_AGENT_VOICE_ID`** — **recommended** for English demos: pick an English or multilingual voice from the Voice Library.
-     - **`DEFAULT_PT_VOICE_ID`** — fallback when the above is unset; still drives the Gradio TTS playground, `apps/ws_bridge`, and the ElevenLabs leg of `tts_vendor_benchmark.py`.
-     - **`DEFAULT_EN_VOICE_ID`** — last fallback for agent provisioning only.
+     - **`DEFAULT_EN_VOICE_ID`** — English Voice Library id used for Convai when `DEFAULT_AGENT_VOICE_ID` is unset (preferred over PT for English demos).
+     - **`DEFAULT_PT_VOICE_ID`** — last fallback for agent provisioning; still drives the Gradio TTS playground, `apps/ws_bridge`, and the ElevenLabs leg of `tts_vendor_benchmark.py`.
 
 Without `ELEVENLABS_API_KEY` and at least one of those voice ids, `agent_create.py` / `demo_prepare.py` fails while building the scenario.
 
@@ -50,7 +50,7 @@ After switching from older `-pt` agents, **re-run provisioning** and refresh **`
 
 ## Step-by-step (recommended flow)
 
-Run from the repo root (`cd elevenlabs-agents-api-playground`).
+Run from the repo root (`cd elevenlabs-agents-demo`).
 
 ### 1. Confirm the API responds
 

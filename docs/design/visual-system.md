@@ -1,7 +1,7 @@
 # Visual System
 
-**Status**: draft  
-**Scope**: local demo UI only  
+**Status**: draft
+**Scope**: local demo UI only
 **Reference**: [ElevenLabs brand guidelines](https://elevenlabs.io/brand)
 
 ## Purpose

@@ -1,7 +1,7 @@
 [project]
 name = "eleven-demo"
 version = "0.1.0"
-description = "Hands-on exploration of ElevenLabs ElevenAgents and ElevenAPI through Brazilian-market scenarios"
+description = "Hands-on lab for ElevenAgents and ElevenAPI: SDKs, signed URLs, MCP, and Brazilian-market voice scenarios"
 readme = "README.md"
 requires-python = ">=3.13"
 license = { text = "MIT" }
@@ -32,6 +32,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+mcp = [
+    "mcp>=2,<3",
+]
 dev = [
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
@@ -45,7 +48,7 @@ dev = [
 ]
 
 [project.urls]
-Repository = "https://github.com/adriannoes/elevenlabs-agents-api-playground"
+Repository = "https://github.com/adriannoes/elevenlabs-agents-demo"
 
 [build-system]
 requires = ["hatchling"]
@@ -100,14 +103,14 @@ disallow_untyped_defs = false
 disallow_incomplete_defs = false
 
 [[tool.mypy.overrides]]
-module = ["gradio.*", "vcr.*"]
+module = ["gradio.*", "vcr.*", "mcp.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 markers = [
-    "integration: tests that hit the live ElevenLabs API or replay VCR cassettes (skipped without ELEVENLABS_API_KEY)",
+    "integration: hits the live ElevenLabs API or replays VCR cassettes (skipped when no real ELEVENLABS_API_KEY and no cassette on disk)",
     "slow: tests that take more than 1 second",
 ]
 addopts = [
