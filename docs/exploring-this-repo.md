@@ -29,7 +29,7 @@ The first command verifies the API key and provisions or updates the three demo 
 ## Design choices in this lab
 
 - **Single SDK entry** — All ElevenLabs access goes through `eleven_demo.client.get_client()` (retries on 429/5xx, no ad-hoc client constructors).
-- **Integration tests** — HTTP traffic is replayed locally with VCR cassettes where possible. CI runs unit tests only and does not consume credits.
+- **Integration tests** — HTTP traffic is replayed locally with VCR cassettes where possible. CI runs unit tests plus cassette replay with a placeholder key and does not consume credits.
 - **Browser and Next.js** — `apps/web` mints **signed URLs** server-side so the browser never receives `ELEVENLABS_API_KEY`.
 - **MCP** — `scripts/mcp_telecom.py` exposes the telecom mock over stdio. Hosted ElevenLabs MCP is a different product; see [mcp-lab-server.md](mcp-lab-server.md).
 - **Post-call data** — This repo does not run a long-lived **post-call webhook** HTTP receiver. Recent conversations can be inspected with [`scripts/conversations_list.py`](../scripts/conversations_list.py); for a production-style webhook design, see [Post-call webhooks pattern](patterns/post-call-webhooks.md).

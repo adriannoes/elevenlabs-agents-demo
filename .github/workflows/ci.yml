@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   python:
-    name: ruff + unit tests
+    name: ruff + tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,3 +32,6 @@ jobs:
 
       - name: Unit tests
         run: uv run pytest -n auto -m "not integration"
+
+      - name: Cassette replay
+        run: uv run pytest -m integration
