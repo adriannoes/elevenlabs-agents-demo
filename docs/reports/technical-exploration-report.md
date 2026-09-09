@@ -200,7 +200,7 @@ Snapshot at the time of the report (unit count has since grown).
 | Gate | Result |
 | --- | --- |
 | Unit tests (`-m "not integration"`, xdist) | 118 passed (JUnit: `artifacts/reports/pytest.xml`) |
-| Integration replay | 7 collected, **3 passed**, **4 skipped** — skips require `DEFAULT_PT_VOICE_ID` for scenario + vendor integration legs when not using pre-recorded cassettes in this environment |
+| Integration replay | 7 collected, **3 passed**, **4 skipped** — at snapshot time, some legs still needed `DEFAULT_PT_VOICE_ID` or live keys when cassettes were missing |
 | Coverage on `src/eleven_demo/` | **95.03%** lines (cobertura); **87.75%** branches; PRD gate ≥80% satisfied |
 | Ruff | `check` + `format --check` clean |
 | Pre-commit | all hooks passed (log: `artifacts/reports/pre-commit.txt`) |
@@ -215,7 +215,7 @@ Known skips:
 
 - Integration tests skip cleanly when neither `ELEVENLABS_API_KEY` nor a VCR cassette is available (`tests/conftest.py`).
 - The vendor benchmark integration test is double-gated (both API keys or a cassette). Cassettes filter `xi-api-key`, `authorization`, and OpenAI request IDs.
-- Scenario integration tests skip when `DEFAULT_PT_VOICE_ID` is unset (`tests/integration/scenarios/_support.py`).
+- Scenario `simulate` tests do **not** skip on `DEFAULT_PT_VOICE_ID`; they skip when neither a cassette nor a live `ELEVENLABS_API_KEY` + `DEMO_AGENT_ID_*` is available (`tests/integration/scenarios/_support.py`). The vendor benchmark integration leg still needs `DEFAULT_PT_VOICE_ID` when recording.
 
 ---
 

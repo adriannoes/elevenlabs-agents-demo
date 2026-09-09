@@ -32,7 +32,7 @@ The primary audience is a developer cloning the repo to learn ElevenLabs; the do
 - **As a developer exploring the ElevenLabs platform**, I want a single command that opens a multi-tab UI showing TTS, three voice agents, and a live latency benchmark, so I can probe the platform interactively without writing UI code.
 - **As a developer comparing TTS models**, I want a CLI that runs N TTS Flash and N TTS Multilingual calls and prints a TTFB table with median and p95, so I can build evidence-based intuition about latency budgets.
 - **As a developer comparing TTS vendors**, I want a reproducible benchmark that runs the same short PT-BR utterances through ElevenLabs Flash v2.5 and OpenAI `gpt-4o-mini-tts`, so I can reason about latency, output format, ergonomics, and use-case fit with measured evidence.
-- **As a developer designing a vertical**, I want each scenario declared as a Python configuration object with `SYSTEM_PROMPT`, `FIRST_MESSAGE`, `LANGUAGE`, `VOICE_ID`, `TOOL_NAMES`, `KB_IDS`, `SUCCESS_CRITERIA`, and a `provision()` function, so I can iterate on prompts without touching demo code (`TOOL_NAMES` map to server-tool mocks; `KB_IDS` lists knowledge-base document IDs after upload for Healthcare).
+- **As a developer designing a vertical**, I want each scenario declared as a Python configuration object with `SYSTEM_PROMPT`, `FIRST_MESSAGE`, `LANGUAGE`, `TOOL_NAMES`, `KB_IDS`, `SUCCESS_CRITERIA`, a `provision()` function, and `voice_id` on `Scenario` (resolved via `from_settings()`), so I can iterate on prompts without touching demo code (`TOOL_NAMES` map to server-tool mocks; `KB_IDS` lists knowledge-base document IDs after upload for Healthcare).
 - **As a developer writing tests**, I want unit tests to mock the SDK and integration tests to replay VCR cassettes, so CI runs in seconds and never burns API credits.
 - **As a developer extending the repo**, I want clear skills, rules, and templates so my AI assistant follows the same conventions on every new feature.
 - **As a teammate opening the repo for the first time**, I want a README that gets me from clone to running demo in under five minutes.
@@ -54,7 +54,7 @@ The primary audience is a developer cloning the repo to learn ElevenLabs; the do
 - **FR-11**: `eleven_demo.agents.tools` defines Pydantic schemas and mock implementations for `lookup_telecom_account(cpf)`, `lookup_account_summary(cpf)`, `request_card_block(card_id, reason)`, `request_card_replacement(reason)`, `book_medical_appointment(specialty, date, patient_id)`, `transfer_to_human(reason)`.
 - **FR-12**: `eleven_demo.agents.kb` provides `upload_kb_text`, `upload_kb_file`, `compute_rag(doc_ids)` for the Healthcare scenario.
 - **FR-13**: `eleven_demo.agents.simulate.simulate(agent_id, user_messages)` returns a `SimulationResult` with the transcript, tool calls, and analysis output.
-- **FR-14**: `eleven_demo.scenarios.{telecom,banking,healthcare}` each export `SYSTEM_PROMPT`, `FIRST_MESSAGE`, `LANGUAGE`, `VOICE_ID`, `TOOL_NAMES`, `KB_IDS`, `SUCCESS_CRITERIA`, and `provision() -> agent_id`.
+- **FR-14**: `eleven_demo.scenarios.{telecom,banking,healthcare}` each export `SYSTEM_PROMPT`, `FIRST_MESSAGE`, `LANGUAGE`, `TOOL_NAMES`, `KB_IDS`, `SUCCESS_CRITERIA`, and `provision() -> agent_id`. Voice lives on `Scenario.voice_id`, set by `from_settings()` (not a module-level `VOICE_ID` constant, so modules import without `Settings`).
 
 ### 4.2 CLI scripts — `scripts/`
 
@@ -84,7 +84,7 @@ The primary audience is a developer cloning the repo to learn ElevenLabs; the do
 ### 4.4 Tests — `tests/`
 
 - **FR-24**: Unit tests under `tests/unit/` mock the SDK and assert on shape, not on byte counts. Coverage target: 80% on `src/eleven_demo/`.
-- **FR-25**: Integration tests under `tests/integration/` use `pytest-vcr` cassettes filtered to strip `xi-api-key`. Marked `@pytest.mark.integration`. Skipped when `ELEVENLABS_API_KEY` is unset and no cassette is present.
+- **FR-25**: Integration tests under `tests/integration/` use `pytest-vcr` cassettes filtered to strip `xi-api-key`. Marked `@pytest.mark.integration`. CI replays cassette-backed tests with a placeholder key (no live secret). Tests skip when `ELEVENLABS_API_KEY` is unset and no cassette is present.
 - **FR-26**: Each scenario has at least one regression test that runs `simulate` with a canonical 3-turn conversation and asserts on `SUCCESS_CRITERIA`.
 
 ### 4.5 Tooling and docs
