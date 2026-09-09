@@ -43,7 +43,7 @@ def main() -> None:
         models_md = fetch_text(args.models_url)
         tts_md = fetch_text(args.tts_skill_url)
         stt_md = fetch_text(args.stt_skill_url)
-    except (httpx.HTTPError, DocsFetchError) as exc:
+    except (httpx.HTTPError, httpx.InvalidURL, DocsFetchError) as exc:
         console.print(f"[red]fetch failed:[/red] {exc}")
         raise SystemExit(2) from exc
 

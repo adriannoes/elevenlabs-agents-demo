@@ -211,6 +211,63 @@ def test_fetch_text_ok_markdown() -> None:
     assert text.startswith("# Models")
 
 
+def test_fetch_text_accepts_yaml_front_matter() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, text="---\ntitle: Models\n---\n# Models\nFlagship.\n")
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        text = fetch_text("https://example.test/models.md", client=client)
+    assert "# Models" in text
+
+
+def test_fetch_text_empty_body_is_docs_fetch_error() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, text="  \n")
+
+    with (
+        httpx.Client(transport=httpx.MockTransport(handler)) as client,
+        pytest.raises(DocsFetchError, match="empty body"),
+    ):
+        fetch_text("https://example.test/empty.md", client=client)
+
+
+def test_fetch_text_html_body_is_docs_fetch_error() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            text="<!DOCTYPE html><html><body>Models</body></html>",
+            headers={"content-type": "text/html"},
+        )
+
+    with (
+        httpx.Client(transport=httpx.MockTransport(handler)) as client,
+        pytest.raises(DocsFetchError, match="non-markdown"),
+    ):
+        fetch_text("https://example.test/models.html", client=client)
+
+
+def test_fetch_text_soft_404_is_case_insensitive() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, text="# page not found\n")
+
+    with (
+        httpx.Client(transport=httpx.MockTransport(handler)) as client,
+        pytest.raises(DocsFetchError, match="soft-404"),
+    ):
+        fetch_text("https://example.test/missing.md", client=client)
+
+
+def test_fetch_text_missing_markdown_heading_is_docs_fetch_error() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, text="just a paragraph, no heading\n")
+
+    with (
+        httpx.Client(transport=httpx.MockTransport(handler)) as client,
+        pytest.raises(DocsFetchError, match="markdown heading"),
+    ):
+        fetch_text("https://example.test/prose.md", client=client)
+
+
 def test_cli_exit_codes(monkeypatch: MonkeyPatch) -> None:
     def _set_fetch(models: str, tts: str, stt: str) -> None:
         def fake_fetch(url: str, **kwargs: object) -> str:
@@ -247,6 +304,16 @@ def test_cli_exit_codes(monkeypatch: MonkeyPatch) -> None:
 
     monkeypatch.setattr(skills_model_drift, "fetch_text", boom)
     monkeypatch.setattr("sys.argv", ["skills_model_drift.py"])
+    with pytest.raises(SystemExit) as failed:
+        skills_model_drift.main()
+    assert failed.value.code == 2
+
+
+def test_cli_invalid_url_exits_2(monkeypatch: MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        ["skills_model_drift.py", "--models-url", "http://\x00invalid"],
+    )
     with pytest.raises(SystemExit) as failed:
         skills_model_drift.main()
     assert failed.value.code == 2

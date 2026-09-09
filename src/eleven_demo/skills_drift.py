@@ -5,7 +5,8 @@ strings in tests; the CLI fetches live pages.
 
 These checks are **line-level regex heuristics**, not table parsers: they look for
 model IDs with word boundaries, deprecation notes on the same row, and the first
-``up to N terms`` phrase near the word ``keyterm``.
+``up to N terms`` phrase near the word ``keyterm``. Fetch failures (empty body,
+HTML, soft-404, missing heading) raise ``DocsFetchError`` so the CLI can fail closed.
 """
 
 from __future__ import annotations
@@ -65,6 +66,31 @@ def _lines_mentioning_model_id(haystack: str, model_id: str) -> list[str]:
     return [ln.strip() for ln in haystack.splitlines() if pattern.search(ln)]
 
 
+def _is_html_body(text: str, content_type: str) -> bool:
+    mime = content_type.lower().split(";", 1)[0].strip()
+    if mime in {"text/html", "application/xhtml+xml"}:
+        return True
+    stripped = text.lstrip().lower()
+    return stripped.startswith("<!doctype html") or stripped.startswith("<html")
+
+
+def _first_markdown_heading(text: str) -> str:
+    """Return the first ATX heading, skipping optional YAML front matter."""
+
+    lines = text.splitlines()
+    idx = 0
+    if lines and lines[0].strip() == "---":
+        idx = 1
+        while idx < len(lines) and lines[idx].strip() != "---":
+            idx += 1
+        idx += 1
+    for raw in lines[idx:]:
+        stripped = raw.strip()
+        if stripped.startswith("#"):
+            return stripped
+    return ""
+
+
 def fetch_text(
     url: str,
     *,
@@ -75,8 +101,9 @@ def fetch_text(
 
     Raises:
         httpx.HTTPError: on non-2xx or transport failure.
-        DocsFetchError: when the body is an elevenlabs.io soft-404
-            (HTTP 200 whose first heading is ``# Page Not Found``).
+        httpx.InvalidURL: when ``url`` cannot be parsed.
+        DocsFetchError: when the body is empty, HTML, a soft-404
+            (``# Page Not Found``, any casing), or has no markdown heading.
 
     Args:
         url: Absolute URL to fetch.
@@ -99,9 +126,18 @@ def fetch_text(
         )
         response.raise_for_status()
         text = response.text
-        first_line = next((ln.strip() for ln in text.splitlines() if ln.strip()), "")
-        if first_line == "# Page Not Found":
-            msg = f"soft-404 from {url}: {first_line}"
+        if not text.strip():
+            msg = f"empty body from {url}"
+            raise DocsFetchError(msg)
+        if _is_html_body(text, response.headers.get("content-type", "")):
+            msg = f"non-markdown body from {url}"
+            raise DocsFetchError(msg)
+        heading = _first_markdown_heading(text)
+        if heading.lower().startswith("# page not found"):
+            msg = f"soft-404 from {url}: {heading}"
+            raise DocsFetchError(msg)
+        if not heading:
+            msg = f"missing markdown heading from {url}"
             raise DocsFetchError(msg)
         return text
     finally:

@@ -108,11 +108,17 @@ uv run python scripts/mcp_telecom.py
 
 Setup: [`docs/mcp-lab-server.md`](docs/mcp-lab-server.md).
 
-Compare upstream skills to Models (network; exits 1 on drift):
+---
+
+## Skills vs Models drift
+
+Compare upstream `elevenlabs/skills` copy to canonical Models docs (network; exit 1 on drift, 2 on fetch failure):
 
 ```bash
 uv run python scripts/skills_model_drift.py
 ```
+
+Heuristics are line-level (Turbo deprecation notes, Scribe keyterm cap). See [`docs/upstream-skills-notes.md`](docs/upstream-skills-notes.md).
 
 ---
 
